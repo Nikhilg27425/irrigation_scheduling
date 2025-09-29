@@ -1,6 +1,22 @@
-# Smart Irrigation Scheduling System
+# 🌱 Smart Irrigation Scheduling System
 
-A machine learning-powered web application that predicts irrigation needs for crops based on environmental conditions and crop data.
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
+[![Flask](https://img.shields.io/badge/Flask-2.0+-green.svg)](https://flask.palletsprojects.com)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-1.0+-orange.svg)](https://scikit-learn.org)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+A machine learning-powered web application that predicts irrigation needs for crops based on environmental conditions and crop data. Achieves **93.1% accuracy** using Random Forest classification.
+
+🔗 **Live Demo**: [GitHub Repository](https://github.com/Nikhilg27425/irrigation_scheduling)
+
+## 🌟 Key Features
+
+- 🤖 **High Accuracy ML Model** - 93.1% accuracy with Random Forest
+- 🌐 **Interactive Web Interface** - Modern, responsive design
+- 📊 **Real-time Predictions** - Instant irrigation recommendations
+- 🎯 **9 Crop Types** - Wheat, Maize, Potato, Sugarcane, and more
+- 📱 **Mobile Friendly** - Works on all devices
+- 🔧 **Easy Setup** - One-command deployment
 
 ## Features
 

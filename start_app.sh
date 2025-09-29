@@ -28,7 +28,7 @@ fi
 
 # Start the Flask application
 echo "🚀 Starting web application..."
-echo "Open your browser and go to: http://localhost:5000"
+echo "The app will automatically find an available port (starting from 5000)"
 echo "Press Ctrl+C to stop the server"
 echo ""
 
