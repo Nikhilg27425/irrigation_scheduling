@@ -3,6 +3,42 @@
 body {
     background-color: #f8f9fa;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+}
+
+/* Stat Cards */
+.stat-card {
+    border-radius: 15px;
+    margin-bottom: 20px;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Weather Cards */
+.weather-card {
+    border-radius: 15px;
+}
+
+.weather-detail {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin: 10px 0;
+}
+
+.forecast-item {
+    padding: 15px 0;
+}
+
+.recommendation-card {
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin: 10px 0;
 }
 
 .navbar-brand {

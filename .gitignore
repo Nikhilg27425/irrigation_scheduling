@@ -157,6 +157,8 @@ irrigation_model.pkl
 *.log
 temp/
 tmp/
+farmers.db
+*.db
 
 # Static files that are generated
 static/images/*.png
