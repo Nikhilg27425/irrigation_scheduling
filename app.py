@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import json
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///farmers.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -302,10 +302,26 @@ def update_profile():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+# Initialize database and load model on startup
+with app.app_context():
+    db.create_all()
+    # Create demo user if not exists
+    if not User.query.filter_by(username='farmer').first():
+        demo_user = User(
+            username='farmer',
+            email='farmer@example.com',
+            farm_name='Green Valley Farm',
+            location='Punjab, India',
+            farm_size=25.5
+        )
+        demo_user.set_password('farmer123')
+        db.session.add(demo_user)
+        db.session.commit()
+        print("Demo user created")
+
+load_model()
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    
     if load_model():
         print("Starting Flask app...")
         import socket
