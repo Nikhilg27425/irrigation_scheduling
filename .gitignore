@@ -129,7 +129,7 @@ dmypy.json
 .pyre/
 
 # Machine Learning specific
-*.pkl
+# *.pkl  # Commented out to allow irrigation_model.pkl for deployment
 *.joblib
 *.h5
 *.hdf5
