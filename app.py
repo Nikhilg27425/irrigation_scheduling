@@ -364,35 +364,38 @@ def toggle_admin(user_id):
 # Initialize database and load model on startup
 with app.app_context():
     db.create_all()
-    # Create demo user if not exists
-    if not User.query.filter_by(username='farmer').first():
-        demo_user = User(
-            username='farmer',
-            email='farmer@example.com',
-            farm_name='Green Valley Farm',
-            location='Punjab, India',
-            farm_size=25.5,
-            is_admin=False
-        )
-        demo_user.set_password('farmer123')
-        db.session.add(demo_user)
-        db.session.commit()
-        print("Demo user created")
-    
-    # Create admin user if not exists
-    if not User.query.filter_by(username='admin').first():
-        admin_user = User(
-            username='admin',
-            email='admin@example.com',
-            farm_name='Admin Farm',
-            location='System',
-            farm_size=0,
-            is_admin=True
-        )
-        admin_user.set_password('admin123')
-        db.session.add(admin_user)
-        db.session.commit()
-        print("Admin user created")
+    try:
+        # Create demo user if not exists
+        if not User.query.filter_by(username='farmer').first():
+            demo_user = User(
+                username='farmer',
+                email='farmer@example.com',
+                farm_name='Green Valley Farm',
+                location='Punjab, India',
+                farm_size=25.5,
+                is_admin=False
+            )
+            demo_user.set_password('farmer123')
+            db.session.add(demo_user)
+            db.session.commit()
+            print("Demo user created")
+        
+        # Create admin user if not exists
+        if not User.query.filter_by(username='admin').first():
+            admin_user = User(
+                username='admin',
+                email='admin@example.com',
+                farm_name='Admin Farm',
+                location='System',
+                farm_size=0,
+                is_admin=True
+            )
+            admin_user.set_password('admin123')
+            db.session.add(admin_user)
+            db.session.commit()
+            print("Admin user created")
+    except Exception as e:
+        print(f"Error creating users: {e}")
 
 load_model()
 
