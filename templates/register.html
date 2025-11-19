@@ -58,6 +58,34 @@
                 </div>
                 
                 <div class="mb-3">
+                    <label class="form-label">Preferred Language / पसंदीदा भाषा</label>
+                    <select class="form-select" id="language" required>
+                        <option value="en">English</option>
+                        <option value="hi">हिंदी (Hindi)</option>
+                        <option value="bn">বাংলা (Bengali)</option>
+                        <option value="te">తెలుగు (Telugu)</option>
+                        <option value="mr">मराठी (Marathi)</option>
+                        <option value="ta">தமிழ் (Tamil)</option>
+                        <option value="gu">ગુજરાતી (Gujarati)</option>
+                        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                        <option value="ml">മലയാളം (Malayalam)</option>
+                        <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                        <option value="or">ଓଡ଼ିଆ (Odia)</option>
+                        <option value="as">অসমীয়া (Assamese)</option>
+                        <option value="ur">اردو (Urdu)</option>
+                        <option value="sa">संस्कृत (Sanskrit)</option>
+                        <option value="ks">कॉशुर (Kashmiri)</option>
+                        <option value="sd">سنڌي (Sindhi)</option>
+                        <option value="ne">नेपाली (Nepali)</option>
+                        <option value="kok">कोंकणी (Konkani)</option>
+                        <option value="mni">মৈতৈলোন্ (Manipuri)</option>
+                        <option value="doi">डोगरी (Dogri)</option>
+                        <option value="sat">ᱥᱟᱱᱛᱟᱲᱤ (Santali)</option>
+                        <option value="mai">मैथिली (Maithili)</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
                     <label class="form-label">Farm Name</label>
                     <input type="text" class="form-control" id="farm_name" required>
                 </div>
@@ -95,6 +123,7 @@
                 username: document.getElementById('username').value,
                 email: document.getElementById('email').value,
                 password: document.getElementById('password').value,
+                language: document.getElementById('language').value,
                 farm_name: document.getElementById('farm_name').value,
                 location: document.getElementById('location').value,
                 farm_size: document.getElementById('farm_size').value

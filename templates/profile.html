@@ -39,6 +39,25 @@
                     <div class="card-body">
                         <form id="profileForm">
                             <div class="mb-3">
+                                <label class="form-label">Preferred Language</label>
+                                <select class="form-select" id="language">
+                                    <option value="en" {% if current_user.preferred_language == 'en' %}selected{% endif %}>English</option>
+                                    <option value="hi" {% if current_user.preferred_language == 'hi' %}selected{% endif %}>हिंदी (Hindi)</option>
+                                    <option value="bn" {% if current_user.preferred_language == 'bn' %}selected{% endif %}>বাংলা (Bengali)</option>
+                                    <option value="te" {% if current_user.preferred_language == 'te' %}selected{% endif %}>తెలుగు (Telugu)</option>
+                                    <option value="mr" {% if current_user.preferred_language == 'mr' %}selected{% endif %}>मराठी (Marathi)</option>
+                                    <option value="ta" {% if current_user.preferred_language == 'ta' %}selected{% endif %}>தமிழ் (Tamil)</option>
+                                    <option value="gu" {% if current_user.preferred_language == 'gu' %}selected{% endif %}>ગુજરાતી (Gujarati)</option>
+                                    <option value="kn" {% if current_user.preferred_language == 'kn' %}selected{% endif %}>ಕನ್ನಡ (Kannada)</option>
+                                    <option value="ml" {% if current_user.preferred_language == 'ml' %}selected{% endif %}>മലയാളം (Malayalam)</option>
+                                    <option value="pa" {% if current_user.preferred_language == 'pa' %}selected{% endif %}>ਪੰਜਾਬੀ (Punjabi)</option>
+                                    <option value="or" {% if current_user.preferred_language == 'or' %}selected{% endif %}>ଓଡ଼ିଆ (Odia)</option>
+                                    <option value="as" {% if current_user.preferred_language == 'as' %}selected{% endif %}>অসমীয়া (Assamese)</option>
+                                    <option value="ur" {% if current_user.preferred_language == 'ur' %}selected{% endif %}>اردو (Urdu)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
                                 <label class="form-label">Farm Name</label>
                                 <input type="text" class="form-control" id="farm_name" value="{{ current_user.farm_name or '' }}">
                             </div>
@@ -71,6 +90,7 @@
             e.preventDefault();
             
             const data = {
+                language: document.getElementById('language').value,
                 farm_name: document.getElementById('farm_name').value,
                 location: document.getElementById('location').value,
                 farm_size: document.getElementById('farm_size').value

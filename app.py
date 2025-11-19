@@ -33,6 +33,7 @@ class User(UserMixin, db.Model):
     location = db.Column(db.String(100))
     farm_size = db.Column(db.Float)
     is_admin = db.Column(db.Boolean, default=False)
+    preferred_language = db.Column(db.String(10), default='en')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def set_password(self, password):
@@ -151,7 +152,8 @@ def register():
             email=data.get('email'),
             farm_name=data.get('farm_name'),
             location=data.get('location'),
-            farm_size=float(data.get('farm_size', 0))
+            farm_size=float(data.get('farm_size', 0)),
+            preferred_language=data.get('language', 'en')
         )
         user.set_password(data.get('password'))
         
@@ -173,7 +175,8 @@ def logout():
 def dashboard():
     weather = get_weather_data(current_user.location or "New Delhi")
     recent_predictions = Prediction.query.filter_by(user_id=current_user.id).order_by(Prediction.created_at.desc()).limit(5).all()
-    return render_template('dashboard.html', weather=weather, predictions=recent_predictions)
+    user_lang = current_user.preferred_language or 'en'
+    return render_template('dashboard.html', weather=weather, predictions=recent_predictions, lang=user_lang)
 
 @app.route('/weather')
 @login_required
@@ -379,9 +382,26 @@ def update_profile():
             current_user.location = data['location']
         if 'farm_size' in data:
             current_user.farm_size = float(data['farm_size'])
+        if 'language' in data:
+            current_user.preferred_language = data['language']
         
         db.session.commit()
         return jsonify({'success': True, 'message': 'Profile updated successfully'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/translate', methods=['POST'])
+@login_required
+def translate_api():
+    """Translate text to user's preferred language"""
+    try:
+        from translate import translate_text
+        data = request.get_json()
+        text = data.get('text', '')
+        target_lang = current_user.preferred_language or 'en'
+        
+        translated = translate_text(text, target_lang)
+        return jsonify({'success': True, 'translated': translated})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
