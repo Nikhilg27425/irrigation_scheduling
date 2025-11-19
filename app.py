@@ -465,7 +465,19 @@ def toggle_admin(user_id):
 
 # Initialize database and load model on startup
 with app.app_context():
-    db.create_all()
+    # Drop and recreate all tables (for development)
+    import os
+    if not os.path.exists('instance/farmers.db'):
+        db.create_all()
+    else:
+        # Check if migration is needed
+        try:
+            User.query.first()
+        except:
+            # Table structure changed, recreate
+            db.drop_all()
+            db.create_all()
+    
     try:
         # Create demo user if not exists
         if not User.query.filter_by(username='farmer').first():
@@ -475,7 +487,8 @@ with app.app_context():
                 farm_name='Green Valley Farm',
                 location='Punjab, India',
                 farm_size=25.5,
-                is_admin=False
+                is_admin=False,
+                preferred_language='en'
             )
             demo_user.set_password('farmer123')
             db.session.add(demo_user)
@@ -490,7 +503,8 @@ with app.app_context():
                 farm_name='Admin Farm',
                 location='System',
                 farm_size=0,
-                is_admin=True
+                is_admin=True,
+                preferred_language='en'
             )
             admin_user.set_password('admin123')
             db.session.add(admin_user)
