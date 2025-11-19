@@ -197,6 +197,83 @@ def profile():
     return render_template('profile.html')
 
 # API Endpoints
+def calculate_water_requirement(crop_type, temperature, crop_days, soil_moisture):
+    """
+    Calculate water requirement using Hargreaves ETo method
+    """
+    # Crop coefficients (Kc) for different crops and growth stages
+    crop_kc = {
+        'Wheat': {'initial': 0.3, 'mid': 1.15, 'late': 0.4},
+        'Rice': {'initial': 1.05, 'mid': 1.2, 'late': 0.9},
+        'Cotton': {'initial': 0.35, 'mid': 1.15, 'late': 0.7},
+        'Sugarcane': {'initial': 0.4, 'mid': 1.25, 'late': 0.75},
+        'Maize': {'initial': 0.3, 'mid': 1.2, 'late': 0.6},
+        'Soybean': {'initial': 0.4, 'mid': 1.15, 'late': 0.5},
+        'default': {'initial': 0.35, 'mid': 1.0, 'late': 0.6}
+    }
+    
+    # Get Kc for crop (use default if not found)
+    kc_values = crop_kc.get(crop_type, crop_kc['default'])
+    
+    # Determine growth stage based on crop days
+    if crop_days < 30:
+        Kc = kc_values['initial']
+        stage = 'Initial'
+    elif crop_days < 90:
+        Kc = kc_values['mid']
+        stage = 'Mid-Season'
+    else:
+        Kc = kc_values['late']
+        stage = 'Late Season'
+    
+    # Hargreaves ETo calculation
+    # ETo = 0.0023 * (Tmean + 17.8) * ΔT^0.5 * Ra
+    # Simplified: Using default values for ΔT and Ra
+    Tmean = temperature
+    delta_T = 10  # Default temperature range (°C)
+    Ra = 25  # Approximate extraterrestrial radiation (MJ/m²/day) - varies by location and season
+    
+    ETo = 0.0023 * (Tmean + 17.8) * (delta_T ** 0.5) * Ra
+    
+    # Calculate crop evapotranspiration
+    ETc = Kc * ETo
+    
+    # Available Water (AW) - typical values for different soil types
+    # Assuming medium soil: 150 mm/m depth
+    AW = 150  # mm
+    
+    # Management Allowed Depletion (MAD) - typically 0.5 for most crops
+    MAD = 0.5
+    
+    # Current depletion based on soil moisture
+    # Assuming soil moisture is on scale 0-1000, where 1000 is field capacity
+    current_depletion = (1000 - soil_moisture) / 1000 * AW
+    
+    # Check if irrigation is needed
+    threshold = MAD * AW
+    
+    # Calculate irrigation amount needed
+    # f = fraction of AW to refill (typically 0.8-1.0)
+    f = 0.9
+    irrigation_needed = max(0, f * AW - (AW - current_depletion))
+    
+    # Convert to liters per square meter (1 mm = 1 L/m²)
+    irrigation_liters_per_m2 = irrigation_needed
+    
+    return {
+        'ETo': round(ETo, 2),  # mm/day
+        'Kc': round(Kc, 2),
+        'ETc': round(ETc, 2),  # mm/day
+        'growth_stage': stage,
+        'current_depletion': round(current_depletion, 2),  # mm
+        'threshold': round(threshold, 2),  # mm
+        'irrigation_amount': round(irrigation_needed, 2),  # mm
+        'irrigation_liters_per_m2': round(irrigation_liters_per_m2, 2),  # L/m²
+        'irrigation_liters_per_acre': round(irrigation_liters_per_m2 * 4046.86, 2),  # L/acre
+        'available_water': AW,
+        'MAD': MAD
+    }
+
 @app.route('/api/predict', methods=['POST'])
 @login_required
 def predict():
@@ -244,6 +321,11 @@ def predict():
                 'irrigation_needed': float(probability[1])
             }
         }
+        
+        # If irrigation is needed, calculate water requirement
+        if prediction == 1:
+            water_calc = calculate_water_requirement(crop_type, temperature, crop_days, soil_moisture)
+            result['water_requirement'] = water_calc
         
         return jsonify(result)
         

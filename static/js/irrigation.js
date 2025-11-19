@@ -59,6 +59,42 @@ function displayResults(result, inputData) {
     const resultClass = result.prediction === 1 ? 'result-irrigation' : 'result-no-irrigation';
     const icon = result.prediction === 1 ? 'fas fa-tint' : 'fas fa-ban';
     
+    let waterRequirementHTML = '';
+    
+    if (result.prediction === 1 && result.water_requirement) {
+        const wr = result.water_requirement;
+        waterRequirementHTML = `
+            <hr style="border-color: rgba(255,255,255,0.3); margin: 20px 0;">
+            <h5><i class="fas fa-calculator me-2"></i>Water Requirement Calculation</h5>
+            <div class="row text-start mt-3">
+                <div class="col-6">
+                    <small><strong>Growth Stage:</strong> ${wr.growth_stage}</small><br>
+                    <small><strong>Crop Coefficient (Kc):</strong> ${wr.Kc}</small><br>
+                    <small><strong>Reference ET (ETo):</strong> ${wr.ETo} mm/day</small><br>
+                    <small><strong>Crop ET (ETc):</strong> ${wr.ETc} mm/day</small>
+                </div>
+                <div class="col-6">
+                    <small><strong>Current Depletion:</strong> ${wr.current_depletion} mm</small><br>
+                    <small><strong>Threshold (MAD):</strong> ${wr.threshold} mm</small><br>
+                    <small><strong>Available Water:</strong> ${wr.available_water} mm</small>
+                </div>
+            </div>
+            <div class="alert alert-light mt-3 mb-0">
+                <h4 class="text-dark mb-2"><i class="fas fa-water me-2"></i>Irrigation Amount Needed</h4>
+                <div class="row text-dark">
+                    <div class="col-6">
+                        <h5>${wr.irrigation_amount} mm</h5>
+                        <small>or ${wr.irrigation_liters_per_m2} L/m²</small>
+                    </div>
+                    <div class="col-6">
+                        <h5>${(wr.irrigation_liters_per_acre / 1000).toFixed(2)} m³/acre</h5>
+                        <small>${wr.irrigation_liters_per_acre.toLocaleString()} L/acre</small>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
     document.getElementById('results').innerHTML = `
         <div class="result-card ${resultClass} fade-in">
             <i class="${icon} fa-3x mb-3"></i>
@@ -68,6 +104,7 @@ function displayResults(result, inputData) {
                      style="width: ${(result.confidence * 100).toFixed(1)}%"></div>
             </div>
             <p><strong>Confidence: ${(result.confidence * 100).toFixed(1)}%</strong></p>
+            ${waterRequirementHTML}
         </div>
     `;
 }
