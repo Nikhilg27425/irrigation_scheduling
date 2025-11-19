@@ -7,7 +7,7 @@
 
 A machine learning-powered web application that predicts irrigation needs for crops based on environmental conditions and crop data. Achieves **93.1% accuracy** using Random Forest classification.
 
-🔗 **Live Demo**: [GitHub Repository](https://github.com/Nikhilg27425/irrigation_scheduling)
+🔗 **Live Demo**: [Deployed Link](https://irrigation-scheduling.onrender.com)
 
 ## 🌟 Key Features
 
