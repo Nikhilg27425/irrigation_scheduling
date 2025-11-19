@@ -32,6 +32,7 @@ class User(UserMixin, db.Model):
     farm_name = db.Column(db.String(100))
     location = db.Column(db.String(100))
     farm_size = db.Column(db.Float)
+    is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def set_password(self, password):
@@ -302,6 +303,64 @@ def update_profile():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+@app.route('/admin')
+@login_required
+def admin():
+    """Admin dashboard"""
+    if not current_user.is_admin:
+        return redirect(url_for('dashboard'))
+    
+    users = User.query.all()
+    predictions = Prediction.query.order_by(Prediction.created_at.desc()).limit(50).all()
+    
+    stats = {
+        'total_users': User.query.count(),
+        'total_predictions': Prediction.query.count(),
+        'predictions_today': Prediction.query.filter(
+            Prediction.created_at >= datetime.utcnow().date()
+        ).count(),
+        'irrigation_needed': Prediction.query.filter_by(prediction=1).count(),
+        'no_irrigation': Prediction.query.filter_by(prediction=0).count()
+    }
+    
+    return render_template('admin.html', users=users, predictions=predictions, stats=stats)
+
+@app.route('/api/admin/delete_user/<int:user_id>', methods=['DELETE'])
+@login_required
+def delete_user(user_id):
+    """Delete a user (admin only)"""
+    if not current_user.is_admin:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    user = User.query.get(user_id)
+    if user:
+        if user.id == current_user.id:
+            return jsonify({'success': False, 'message': 'Cannot delete yourself'}), 400
+        
+        # Delete user's predictions first
+        Prediction.query.filter_by(user_id=user_id).delete()
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'User deleted successfully'})
+    return jsonify({'success': False, 'message': 'User not found'}), 404
+
+@app.route('/api/admin/toggle_admin/<int:user_id>', methods=['POST'])
+@login_required
+def toggle_admin(user_id):
+    """Toggle admin status (admin only)"""
+    if not current_user.is_admin:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    user = User.query.get(user_id)
+    if user:
+        if user.id == current_user.id:
+            return jsonify({'success': False, 'message': 'Cannot modify your own admin status'}), 400
+        
+        user.is_admin = not user.is_admin
+        db.session.commit()
+        return jsonify({'success': True, 'is_admin': user.is_admin})
+    return jsonify({'success': False, 'message': 'User not found'}), 404
+
 # Initialize database and load model on startup
 with app.app_context():
     db.create_all()
@@ -312,12 +371,28 @@ with app.app_context():
             email='farmer@example.com',
             farm_name='Green Valley Farm',
             location='Punjab, India',
-            farm_size=25.5
+            farm_size=25.5,
+            is_admin=False
         )
         demo_user.set_password('farmer123')
         db.session.add(demo_user)
         db.session.commit()
         print("Demo user created")
+    
+    # Create admin user if not exists
+    if not User.query.filter_by(username='admin').first():
+        admin_user = User(
+            username='admin',
+            email='admin@example.com',
+            farm_name='Admin Farm',
+            location='System',
+            farm_size=0,
+            is_admin=True
+        )
+        admin_user.set_password('admin123')
+        db.session.add(admin_user)
+        db.session.commit()
+        print("Admin user created")
 
 load_model()
 
