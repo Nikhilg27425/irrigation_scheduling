@@ -53,6 +53,35 @@ class Prediction(db.Model):
     prediction = db.Column(db.Integer)
     confidence = db.Column(db.Float)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationship
+    user = db.relationship('User', backref='predictions')
+
+class IrrigationSchedule(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    prediction_id = db.Column(db.Integer, db.ForeignKey('prediction.id'))
+    
+    # Schedule details
+    scheduled_time = db.Column(db.DateTime, nullable=False)
+    status = db.Column(db.String(20), default='pending')  # pending, cancelled, postponed, completed, executing
+    
+    # Irrigation details
+    water_amount = db.Column(db.Float)  # in mm
+    duration = db.Column(db.Float)  # in minutes
+    
+    # Decision tracking
+    cancellation_reason = db.Column(db.String(200))
+    notification_sent = db.Column(db.Boolean, default=False)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    executed_at = db.Column(db.DateTime)
+    
+    # Relationships
+    user = db.relationship('User', backref='schedules')
+    prediction = db.relationship('Prediction', backref='schedules')
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -329,6 +358,7 @@ def predict():
         if prediction == 1:
             water_calc = calculate_water_requirement(crop_type, temperature, crop_days, soil_moisture)
             result['water_requirement'] = water_calc
+            result['prediction_id'] = pred_record.id  # Include prediction ID for scheduling
         
         return jsonify(result)
         
@@ -402,6 +432,125 @@ def translate_api():
         
         translated = translate_text(text, target_lang)
         return jsonify({'success': True, 'translated': translated})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+# ============= IRRIGATION SCHEDULING ENDPOINTS =============
+
+@app.route('/schedule')
+@login_required
+def schedule_page():
+    """Schedule management page"""
+    schedules = IrrigationSchedule.query.filter_by(user_id=current_user.id).order_by(IrrigationSchedule.scheduled_time.desc()).all()
+    return render_template('schedule.html', schedules=schedules)
+
+@app.route('/api/schedule/create', methods=['POST'])
+@login_required
+def create_schedule():
+    """Create new irrigation schedule"""
+    try:
+        data = request.get_json()
+        
+        prediction_id = data.get('prediction_id')
+        scheduled_time = data.get('scheduled_time')  # ISO format datetime
+        water_amount = float(data.get('water_amount'))
+        duration = float(data.get('duration', 60))  # default 60 minutes
+        
+        # Parse scheduled time
+        if scheduled_time:
+            scheduled_dt = datetime.fromisoformat(scheduled_time.replace('Z', '+00:00'))
+        else:
+            # Default: schedule for next optimal time (6 AM next day)
+            tomorrow = datetime.utcnow() + timedelta(days=1)
+            scheduled_dt = tomorrow.replace(hour=6, minute=0, second=0, microsecond=0)
+        
+        # Create schedule
+        schedule = IrrigationSchedule(
+            user_id=current_user.id,
+            prediction_id=prediction_id,
+            scheduled_time=scheduled_dt,
+            water_amount=water_amount,
+            duration=duration,
+            status='pending'
+        )
+        
+        db.session.add(schedule)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Irrigation scheduled successfully',
+            'schedule_id': schedule.id,
+            'scheduled_time': schedule.scheduled_time.isoformat()
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/schedule/list')
+@login_required
+def list_schedules():
+    """Get user's irrigation schedules"""
+    try:
+        schedules = IrrigationSchedule.query.filter_by(user_id=current_user.id).order_by(IrrigationSchedule.scheduled_time.desc()).limit(50).all()
+        
+        result = [{
+            'id': s.id,
+            'scheduled_time': s.scheduled_time.isoformat(),
+            'status': s.status,
+            'water_amount': s.water_amount,
+            'duration': s.duration,
+            'cancellation_reason': s.cancellation_reason,
+            'executed_at': s.executed_at.isoformat() if s.executed_at else None,
+            'created_at': s.created_at.isoformat()
+        } for s in schedules]
+        
+        return jsonify({'success': True, 'schedules': result})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/schedule/<int:schedule_id>/cancel', methods=['POST'])
+@login_required
+def cancel_schedule(schedule_id):
+    """Cancel a scheduled irrigation"""
+    try:
+        schedule = IrrigationSchedule.query.get(schedule_id)
+        
+        if not schedule or schedule.user_id != current_user.id:
+            return jsonify({'success': False, 'message': 'Schedule not found'}), 404
+        
+        if schedule.status not in ['pending', 'postponed']:
+            return jsonify({'success': False, 'message': 'Cannot cancel this schedule'}), 400
+        
+        schedule.status = 'cancelled'
+        schedule.cancellation_reason = 'Cancelled by user'
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Schedule cancelled'})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/schedule/<int:schedule_id>/execute', methods=['POST'])
+@login_required
+def execute_schedule_now(schedule_id):
+    """Execute irrigation immediately (manual trigger)"""
+    try:
+        schedule = IrrigationSchedule.query.get(schedule_id)
+        
+        if not schedule or schedule.user_id != current_user.id:
+            return jsonify({'success': False, 'message': 'Schedule not found'}), 404
+        
+        if schedule.status != 'pending':
+            return jsonify({'success': False, 'message': 'Schedule is not pending'}), 400
+        
+        # Execute immediately
+        from scheduler import process_schedule
+        process_schedule(schedule_id)
+        
+        return jsonify({'success': True, 'message': 'Irrigation executed'})
+        
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 

@@ -60,6 +60,7 @@ function displayResults(result, inputData) {
     const icon = result.prediction === 1 ? 'fas fa-tint' : 'fas fa-ban';
     
     let waterRequirementHTML = '';
+    let scheduleButtonHTML = '';
     
     if (result.prediction === 1 && result.water_requirement) {
         const wr = result.water_requirement;
@@ -93,6 +94,13 @@ function displayResults(result, inputData) {
                 </div>
             </div>
         `;
+        
+        // Add schedule button
+        scheduleButtonHTML = `
+            <button class="btn btn-warning btn-lg w-100 mt-3" onclick="scheduleIrrigation(${result.prediction_id}, ${wr.irrigation_amount})">
+                <i class="fas fa-calendar-plus me-2"></i>Schedule Irrigation
+            </button>
+        `;
     }
     
     document.getElementById('results').innerHTML = `
@@ -105,8 +113,42 @@ function displayResults(result, inputData) {
             </div>
             <p><strong>Confidence: ${(result.confidence * 100).toFixed(1)}%</strong></p>
             ${waterRequirementHTML}
+            ${scheduleButtonHTML}
         </div>
     `;
+}
+
+function scheduleIrrigation(predictionId, waterAmount) {
+    // Calculate optimal time (6 AM tomorrow)
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(6, 0, 0, 0);
+    
+    const scheduleData = {
+        prediction_id: predictionId,
+        water_amount: waterAmount,
+        duration: 60,  // 60 minutes default
+        scheduled_time: tomorrow.toISOString()
+    };
+    
+    fetch('/api/schedule/create', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(scheduleData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✓ Irrigation scheduled for ' + new Date(data.scheduled_time).toLocaleString());
+            window.location.href = '/schedule';
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error scheduling irrigation');
+        console.error(error);
+    });
 }
 
 function showError(message) {
