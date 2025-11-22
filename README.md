@@ -197,8 +197,10 @@ Customize the web interface by modifying:
 
 ## License
 
-This project is open source and available under the MIT License.
+This project is licensed under the **MIT License**.
 
-## Contributing
+## 📧 Contact
 
-Feel free to submit issues, feature requests, or pull requests to improve the system.
+For any inquiries or collaborations, reach out to:
+📧 Email: 23UCS752@lnmiit.ac.com
+📌 GitHub: [Nikhil Gupta](https://github.com/Nikhilg27425)
