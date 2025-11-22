@@ -85,10 +85,10 @@ python test_api.py
 
 ### API Endpoints
 
-- `GET /` - Main web interface
-- `POST /predict` - Make irrigation predictions
-- `GET /crop_types` - Get available crop types
-- `GET /model_info` - Get model information
+- `POST /api/schedule/create` - Create schedule
+- `GET /api/schedule/list` - List schedules
+- `POST /api/schedule/<id>/cancel` - Cancel schedule
+- `POST /api/schedule/<id>/execute` - Execute now
 
 ### Example API Usage
 
