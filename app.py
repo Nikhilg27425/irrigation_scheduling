@@ -554,6 +554,40 @@ def execute_schedule_now(schedule_id):
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+# ============= ANALYTICS ENDPOINTS =============
+
+@app.route('/analytics')
+@login_required
+def analytics_page():
+    """Analytics dashboard page"""
+    from analytics import generate_user_analytics, calculate_stats
+    
+    # Get user's predictions
+    predictions = Prediction.query.filter_by(user_id=current_user.id).order_by(Prediction.created_at.desc()).limit(100).all()
+    
+    # Generate charts
+    charts = generate_user_analytics(predictions)
+    stats = calculate_stats(predictions)
+    
+    return render_template('analytics.html', charts=charts, stats=stats)
+
+@app.route('/admin/analytics')
+@login_required
+def admin_analytics():
+    """System-wide analytics (admin only)"""
+    if not current_user.is_admin:
+        return redirect(url_for('analytics_page'))
+    
+    from analytics import generate_system_analytics
+    
+    # Get all predictions
+    all_predictions = Prediction.query.order_by(Prediction.created_at.desc()).limit(500).all()
+    
+    # Generate system-wide charts
+    charts = generate_system_analytics(all_predictions)
+    
+    return render_template('admin_analytics.html', charts=charts)
+
 @app.route('/admin')
 @login_required
 def admin():
