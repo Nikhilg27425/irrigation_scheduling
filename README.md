@@ -5,13 +5,13 @@
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.0+-orange.svg)](https://scikit-learn.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A machine learning-powered web application that predicts irrigation needs for crops based on environmental conditions and crop data. Achieves **93.1% accuracy** using Random Forest classification.
+A machine learning-powered web application that predicts irrigation needs for crops based on environmental conditions and crop data. Achieves **97.0% accuracy** using XGBClassifier.
 
 🔗 **Live Demo**: [Deployed Link](https://irrigation-scheduling.onrender.com)
 
 ## 🌟 Key Features
 
-- 🤖 **High Accuracy ML Model** - 93.1% accuracy with Random Forest
+- 🤖 **High Accuracy ML Model** - 97% accuracy with XGBClassifier
 - 🌐 **Interactive Web Interface** - Modern, responsive design
 - 📊 **Real-time Predictions** - Instant irrigation recommendations
 - 🎯 **9 Crop Types** - Wheat, Maize, Potato, Sugarcane, and more
@@ -20,7 +20,7 @@ A machine learning-powered web application that predicts irrigation needs for cr
 
 ## Features
 
-- **Machine Learning Model**: Random Forest classifier trained on crop production data
+- **Machine Learning Model**: XGBClassifier,Random Forest classifier trained on crop production data
 - **Interactive Web Interface**: User-friendly form to input parameters
 - **Real-time Predictions**: Instant irrigation recommendations with confidence scores
 - **Data Visualization**: Comprehensive analysis of the dataset and model performance
@@ -106,8 +106,8 @@ curl -X POST http://localhost:5000/predict \
 
 ## Model Performance
 
-- **Algorithm**: Random Forest Classifier
-- **Accuracy**: ~85% (varies based on training data)
+- **Algorithm**: XGBClassifier
+- **Accuracy**: ~97% (varies based on training data)
 - **Features**: 8 engineered features including ratios and derived metrics
 - **Cross-validation**: Stratified split for balanced evaluation
 
@@ -145,7 +145,7 @@ irrigation_scheduling/
    - Stratified train-test split
 
 3. **Model Selection**:
-   - Random Forest for handling mixed data types
+   - XGBClassifier , Random Forest for handling mixed data types
    - Built-in feature importance
    - Robust to outliers
 
