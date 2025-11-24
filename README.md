@@ -191,7 +191,7 @@ Customize the web interface by modifying:
 - Weather API integration for real-time data
 - Historical prediction tracking
 - Mobile-responsive design improvements
-- Advanced ML models (XGBoost, Neural Networks)
+- Advanced ML models (Neural Networks)
 - Multi-language support
 - Export functionality for predictions
 
